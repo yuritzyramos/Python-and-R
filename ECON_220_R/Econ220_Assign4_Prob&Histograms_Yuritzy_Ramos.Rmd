@@ -1,0 +1,72 @@
+---
+title: "Assignment: Random Number Generation and Histograms"
+author: "Yuritzy Ramos"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document: 
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+```{r, echo=TRUE}
+#Set seed
+set.seed(245)
+#Create vectors containing 100 random numbers from the normal distribution  
+#with specificed means and standard deviations 
+y <- rnorm(100, mean = 3, sd=7)
+z<- rnorm(100, mean= 7, sd=3)
+#Create a vector of 100 observations from the uniform random distribution
+u<- runif(100)
+```
+
+
+
+```{r, echo=TRUE}
+set.seed(123)
+#Create a sequence of number 0 - 500
+s <- seq(0, 500)
+#Select a vector from a sample of size 100 
+#The sample consists of values from the sequence without replacement 
+v <- c(sample(s, 100, replace=FALSE))
+```
+
+
+
+```{r, results='hold', message=FALSE, echo=TRUE}
+#Create data frames using the the vectors
+y_hist <-data.frame(y,u)
+v_hist <- data.frame(v,u)
+z_hist <- data.frame(z,u)
+
+#Plot a histogram using the data in y_hist
+#Create  bins using the breaks variable
+#Assign the fill variable to count
+#Create a distribution line
+#The y-axis represents density 
+ggplot(y_hist, aes(y)) + geom_histogram(aes(y=..density.., fill= ..count..), breaks = seq(-10,20,2)) + geom_density(col=3) + labs(title = "Histogram of Y") + theme(plot.title = element_text(hjust = .5))
+
+#Plot a histogram using the data in y_hist using bins instead of breaks
+#Assign the fill variable to count
+#Create a distribution line
+#The y-axis represents density 
+ggplot(y_hist, aes(y)) + geom_histogram( aes(y=..density.., fill = ..count..),
+bins = 20) + geom_density(col=3) + labs(title = "Histogram of Y") + theme(plot.title = element_text(hjust = .5)) 
+
+#Plot a histogram using the data in v_hist
+#Assign the fill variable to count
+#Outline bins in red
+#Create a distribution line
+#The y-axis represents density 
+ggplot(v_hist, aes(v)) + geom_histogram( aes(y=..density.., fill = ..count..),
+bins = 24 , color = "red") + geom_density(col=2) + labs(title = "Histogram of V") + theme(plot.title = element_text(hjust = .5)) 
+
+#Plot a histogram using the data in z_hist
+#Fill in the columns with purple
+#The y-axis represents count 
+ggplot(z_hist, aes(z)) + geom_histogram(aes(y=..count..), fill = "purple", bins = 20)+ labs(title = "Histogram of Z") + theme(plot.title = element_text(hjust = .5)) 
+```
+

@@ -1,0 +1,413 @@
+---
+title: "Debt and Dedication: Does Debt Affect the Academics of Emory Students? "
+author: "Yuritzy Ramos"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document: 
+    toc: yes
+    theme: cerulean
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(kableExtra)
+```
+
+# Introduction and Motivation:
+
+![](/Users/yuritzyramos/Desktop/images/im-190857.jpeg)
+
+As a student at Emory University, I've had the privilege of accessing a vast array of resources, extracurricular activities, and facilities on, as well as off, campus. Privileges that have made the decision of taking out student loans seem worthwhile. 
+
+While attending college has brought with it new opportunities and experiences, it has also brought with it a sense of obligation towards one's studies. There were times when I found myself working on an assignment late at night while my hall mates were getting ready to venture off to a club or party. At one point, I found myself wondering if the fact that I had some form of debt incentivized me to spend longer hours on school work when compared to my peers. However, I also realized the amount of time I could spend on assignments was due to the fact that I didn't need a part time job to make ends meet. These experiences motivated the following hypotheses:
+
+### Hypotheses 
+
++-------------------------------+----------------------------+
+| Null Hypothesis               | Alternative Hypothesis     |
++===============================+============================+
+|There is no significant        | There is a positive        |
+|relationship between student   | correlation between the    |
+|debt and average time          | amount of debt a           |
+|dedicated to school work       | student owes and the       |
+|                               | average time they dedicate |
+|                               | to school work             |
++-------------------------------+----------------------------+
+|There is no significant        |There is a negative         |
+|relationship between student   |correlation between         |
+|employment status, average     |student employment status   |
+|study time, and higher stress  |and average study time      |
+|levels                         |while there exists a        |
+|                               |positive correlation        |
+|                               |between employment status   | 
+|                               |and student stress levels   |
++-------------------------------+----------------------------+
+|There is no significant        |There is a negative         |
+|relationship between student   |correlation between student |
+|debt and GPA                   |debt and GPA                |
++-------------------------------+----------------------------+
+
+### Investing in a College Education
+  
+Attending college is an important step in the life of many individuals. It grants opportunities that are not always accessible with a high school diploma or GED. However, society seems to forget the repercussions that come with attaining higher education. Aside from the heightened stress levels and multiple deadlines  college students have to juggle, financial concerns also emerge. According to research by the [Pell Institute](https://files.eric.ed.gov/fulltext/ED504448.pdf), an organization focused on studying obstacles hindering educational opportunities for first generation and low-income students, need based financial aid has failed to keep up with increases in prices such as tuition. In fact the report states that the amount of unmet financial need for first-generation, low-income students is around $6,000 or about half of their families median annual income. This results in disadvantaged students having to take on a job which can have harmful effects on their college experience. 
+
+Statistics on student stress for 2019 and 2020 indicate that [32% of American students neglect their studies due to money issues](https://www.guide2research.com/research/student-stress-statistics#3). 
+
+Due to higher tuition rates and personal living expenses, students find themselves dealing with unmet costs in several ways. The graph below indicates some of the most common ways in which college students attempt to cover unmet tuition.
+
+![]( /Users/yuritzyramos/Desktop/images/1920_largesizehorizontalgray.png)
+
+Thus, it seems that most college students rely on student loans rather than jobs to pay for tuition costs; however, jobs still hold an important role in paying personal living expenses such as rent, food, and  maintenance bills. 
+
+In regards to external pressures, the graphic below, which uses data from the Pew's Research Center on social trends, demonstrates that grades are the reason behind most of the stress experienced by college students.
+
+![](/Users/yuritzyramos/Desktop/images/Sources\ of\ Student\ Pressure\ Among\ Teens\ .jpg)
+
+### Does This Trend Continue at Emory?
+When prospective students search for Emory University on the internet, they are confronted with gorgeous scenes of the campus, the smiling faces of students hanging out on the quad, and the list of majors that exist within the institution. One search that almost every student encounters is found on [urban dictionary](https://www.urbandictionary.com/define.php?term=emory). While not the most credible of sources when it comes to data, the definition given on the website contains some undeniable truth when it comes to socioeconomic differences at Emory. 
+
+Definition:
+
+*"Emory*
+
+ *1. A private university in Atlanta, Ga*
+ 
+ *2. ....where kids on financial aid meet those whose parents gave them a jag at 16...."*
+ 
+
+Emory University has an incredibly diverse, tightly-knit student body that spans various socioeconomic and racial groups. As a result, the experiences of students at Emory University are all unique and affected by aspects of their background specifically those centered around economic status. In studying the data provided by the students of an ECON220 course at Emory University, this report will evaluate if the previous hypotheses hold some, if any, truth within a sample of Emory University's community.
+
+
+
+# What Does the Data Say?
+```{r, results='hide', echo=TRUE}
+#Load data and select variables necessary for the study 
+load("~/Downloads/LAB220/Econ220DataS21_ano.Rdata")
+Econ220Data <- Econ220DataS21_ano%>%
+  select(year, sex, GPA,q14, q15,,q63,q47,q41)%>%
+  data.frame()
+
+#Data Cleaning
+
+#Rename Questions 
+Econ220Data <-Econ220Data %>%
+  rename(Debt_Amount = q63)%>%
+  rename(Year_in_College = year)%>%
+  rename(Stress_Level = q15)%>%
+  rename(Currently_Employeed = q47)%>%
+  rename(Hours_per_Week_Spent_on_Schoolwork = q41)%>%
+  rename(Sleep_in_Hours = q14)
+
+#Omit empty observation from Econ220Data
+Econ220Data <- na.omit(Econ220Data)
+
+#Clean Employment Status 
+Econ220Data$Currently_Employeed[Econ220Data$Currently_Employeed == ""]<- NA
+
+#Clean year data
+Econ220Data$Year_in_College <- gsub("junior", 3, Econ220Data$Year_in_College)
+Econ220Data$Year_in_College <- gsub("[^0-9]","", Econ220Data$Year_in_College)
+Econ220Data$Year_in_College[Econ220Data$Year_in_College == "2022"] <- 3
+Econ220Data$Year_in_College[Econ220Data$Year_in_College == "2023" |Econ220Data$Year_in_College == "23"  ] <- 2
+Econ220Data$Year_in_College[Econ220Data$Year_in_College == "2024"] <- 1
+Econ220Data$Year_in_College <- as.numeric(Econ220Data$Year_in_College)
+Econ220Data$Year_in_College <- factor(Econ220Data$Year_in_College,labels=c("Freshman","Sophomore", "Junior", "Senior"))
+
+#Cleaning GPA Data 
+Econ220Data$GPA[Econ220Data$GPA == "Highschool - 3.9"] <- 3.9
+Econ220Data$GPA <- as.numeric(Econ220Data$GPA)
+Econ220Data$GPA <- round(Econ220Data$GPA,2)
+
+#Cleaning Stress Data (rounding up for graph efficiency) and factoring stress data into levels
+StressData<-Econ220Data$Stress_Level # Storing numerical values for stress in a separate variable (will be used for computations)
+Econ220Data$Stress_Level[Econ220Data$Stress_Level == "8.5"] <- 9
+Econ220Data$Stress_Level<-factor(Econ220Data$Stress_Level, labels= c("No Stress", "Laid Back", "Tolerable", "Optimum Stress", "Fatigue","Exhauston","Anxiety", "Nearing Burnout", "Burning Out"))
+
+#Data frame containing the numerical and factored value of the stress data (will be used for piechart)
+stressdf<- data.frame(Econ220Data$Stress_Level, StressData)
+stressdf<- stressdf%>%
+  rename(Stress = Econ220Data.Stress_Level)
+
+#Clean Debt Amount 
+Econ220Data$Debt_Amount<- gsub("[$\\d]", "", Econ220Data$Debt_Amount)
+Econ220Data$Debt_Amount<- as.numeric(Econ220Data$Debt_Amount)
+
+#Variable for computations using debt data
+studebt<-ifelse(Econ220Data$Debt_Amount == "0", "No", "Yes")
+```
+
+The data set used in this study consists of the responses of 95 Emory University students taking an Econ220 course. In this case, the variables that will be used in the study will be the student's sex assigned at birth, year in college, grade point average, debt amount, stress level, employment status, and time spent on course work per week (not counting Zoom or in person class sessions). 
+
+
+### Summary of Variables 
+A quick summary of the variables used in this study can be found  below:
+```{r, results='hold', message=FALSE}
+#Summary of variables used in study 
+summary(Econ220Data)
+```
+
+### The Relationship Between Stress, Work, and Studying
+The [Yerkes - Dodson Law](https://en.wikipedia.org/wiki/Yerkes–Dodson_law) is a an important concept when examining the effects of stress on a college student's physical and mental health. This law states that while a certain level of arousal is beneficial to performance, too much arousal can cause a decline in performance. 
+
+A popular representation of this idea is seen in the form of the Stress Curve. 
+
+![](/Users/yuritzyramos/Desktop/images/901.jpg)
+
+Using the Stress Curve as a guide, I categorized the levels of stress reported by Emory students (on a scale of 1-10) in order to assist the visualization stress as it relates to  employment and GPA. 
+
+Below is a break down of the stress levels reported by students during Spring semester 2021 at Emory University.
+
+
+```{r}
+#Creates a data frame containing the name of each stress level, counts per stress level, and the percentage of students that reported each stress level
+piechart<- stressdf %>%
+  group_by(Stress)%>%
+  summarize(counts = n(), percentage = n()/nrow(stressdf))
+
+#Using ploy_ly to create an animated pie chart with the previously made piechart data frame
+plot_ly(piechart, labels = piechart$Stress,values = piechart$percentage, type = 'pie', sort = FALSE, marker = list(colors = piechart$Stress, line = list(color = "black", width = 1))) %>% layout(title = "Student Stress Levels")
+```
+*Remark*
+
+It should be noted that the survey specifically asked students to report the amount of stress caused by school work; however, the overall value given to the stress being experienced by individual students could be the result of several external factors not taken into account in this study such as family environment, food insecurity, and housing situations (among others) that could contribute to how academic stress is perceived. 
+
+
+
+The column graph below shows the average amount of hours spent by students on school work based on whether or not they reported being employed at present.
+```{r, results='hold',message=FALSE} 
+#Creates a column graph grouped by student employment status and stress level
+#Average study hours is summarized for this grouping on both columns 
+#Columns are filed by stress level to help visualize the spread better
+na.omit(Econ220Data) %>% 
+  group_by(Stress_Level, Currently_Employeed)%>%
+  summarise(avg_hours = round(mean(Hours_per_Week_Spent_on_Schoolwork),0))%>%
+  ggplot(mapping = aes (x = Currently_Employeed, y = avg_hours,fill = Stress_Level, label = avg_hours)) + geom_col(alpha = .5) + geom_text(size=4, fontface=2, color="black", position = position_stack(vjust = 0.5)) +
+  ylab("Hours Per Week") + xlab("Employeed")+
+  ggtitle("Student Stress Levels Based on Employment and Average Study Hours ") +
+   theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+
+
+As can be seen, students that are unemployed demonstrate a wider range of stress levels while those that are employed are crowded closer to the middle and beyond.It is also interesting to note that the average hours spent on assignments by employed students are usually less or on-par with that of unemployed students. Thus, employment appears to have a direct impact on hours spent studying per week which, in turn, heightens the stress experienced by Emory students. 
+
+
+Having a general idea of the relationship that exists between hours spent studying and employment, it seems appropriate to evaluate the role of debt in decisions about employment as well. 
+
+### Visualizing Debt at Emory
+
+Generally, private institutions, such as Emory University, are known for having a large population of students from high income families. Aside from this, STEM fields, such as Economics, are predominantly made up of males. Putting this information in context with student debt, it is also known that [women hold approximately two-thirds of the $1.54 trillion student loan debt in the United States](https://www.aauw.org/resources/research/deeper-in-debt/). This suggests that female students may find themselves needing to take out larger loans compared to their male counterparts.
+
+However, it's important to remember that not all students decide to take out loans and the amount taken out varies from person to person. Visualizing the spread out of debt among Emory students is key to revealing if any of the previously stated trends hold for the population.
+
+Below is a violin plot of the debt data reported by students. Placing the cursor on either of the two groups gives more information on the density of the population at a given point of the data:
+
+```{r}
+#Creates interactive violin chart of debt amount data by sex
+p1<-ggplot(data=Econ220Data, aes(y=Debt_Amount, x=sex, color=sex))+  geom_violin( alpha=0.5) + ylab("Debt in dollars ($)") + ggtitle("Spread of Debt by Sex ") +  theme(plot.title = element_text(hjust = 0.5)) 
+ggplotly(p1)
+```
+
+There appear to be some outliers in the data presented by both males and females particularly the maximum values. Irregardless, most of the data seems to be crowded around the value of 0 dollars. However, it is interesting to note that the female pool demonstrates a wider spread than the male one. Of course, this behavior may be the result of the outliers previously mentioned. 
+
+Thus, it seems that while some students have an outstanding amount of debt, a majority of the population doesn't. Of the few individuals that do have some form of debt during college, females seem to have the most. 
+
+The column graph below gives a better idea of the dynamics that exist between students debt, sex, and employment decisions. 
+```{r, message=FALSE}
+#Creates column graph grouped by sex and employment status 
+#Average debt is summarized for these groups which are filled for their corresponding sex
+na.omit(Econ220Data) %>% 
+  group_by(sex, Currently_Employeed)%>%
+  summarise(avg_d = round(mean(Debt_Amount),0))%>%
+  ggplot(mapping = aes (x = Currently_Employeed, y = avg_d,fill = sex, label = avg_d)) + geom_col(alpha = .5) + geom_text(size=4, fontface=2, color="black", position = position_stack(vjust = 0.5)) +
+  ylab("Avgerage Debt") + xlab("Employeed")+
+  ggtitle("Avgerage Debt by Employment and Sex ") +
+   theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+One interesting detail obtained from this graphic is the fact that females with more debt are unemployed while females with less debt are currently employed. The opposite seems to be true for males with the population that is unemployed having less debt than that which is employed. 
+
+It's possible that having less debt might actually incentivize male students to work. Smaller loans suggest smaller payment amounts and certain student loans don't have to be paid back until after graduation. 
+
+Female students with larger loan amounts seem to have an equal chance of falling into either category. Those who do not work might worry about the effects a job would have on their grades while those who do work may need the extra money to pay bills, buy food, and/or meet loan payments. 
+
+
+After seeing these results, the next the question now becomes how these factors, and many others, impact the college experience. Since grades were determined to be the main source of stress for college students, it seems appropriate to see how these variables relate to student GPA. 
+
+
+### What Affects the GPA of Emory Students? 
+
+Taking into account transfer credits and the liberty of choosing classes during college, the graphs below help visualize the sample as well as the relationship between stress, hours spent studying, sleep, debt, and GPA
+
+The correlation coefficient for each graph can be found below:
+
+```{r,fig.show='hold', out.width="50%"}
+#Scatter plots for the purpose of visualizing the relationship between various variables and GPA
+
+#Scatter plot for stress level and GPA
+ggplot(Econ220Data, aes(x= StressData, y = GPA, color = sex, shape = Year_in_College)) + geom_point() + 
+  ylab("GPA Reported by Students") + xlab("Stress Level Reported by Students (1-10)")+
+  ggtitle("Graph 1: The Effects of Stress on Student GPA") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Scatter plot for hours per week spent on school work and GPA
+ggplot(Econ220Data, aes(x= Hours_per_Week_Spent_on_Schoolwork, y = GPA, color = sex, shape = Year_in_College)) + geom_point() + 
+  ylab("GPA Reported by Students") + xlab("Hours per Week")+
+  ggtitle("Graph 2: The Effects of Time Allocation on GPA ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Scatter plot for sleep and GPA
+ggplot(Econ220Data, aes(x= Sleep_in_Hours, y = GPA, color = sex, shape = Year_in_College)) + geom_point() + 
+  ylab("GPA Reported by Students") + xlab("Hours per day")+
+  ggtitle("Graph 3: The Effects of Sleep on GPA ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Scatter plot for debt in dollars and GPA
+ggplot(Econ220Data, aes(x= Debt_Amount, y = GPA, color = sex, shape = Year_in_College)) + geom_point() + 
+  ylab("GPA Reported by Students") + xlab("Debt in dollars ($)")+
+  ggtitle("Graph 4: The Effects of Debt on GPA ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Correlation coefficients for graphs 
+print(paste("Graph 1: The correlation between stress and student GPA is ",cor(Econ220Data$GPA, StressData), sep=""))
+print(paste("Graph 2: The correlation between hours spent on school work and student GPA is ",cor(Econ220Data$GPA, Econ220Data$Hours_per_Week_Spent_on_Schoolwork), sep=""))
+print(paste("Graph 3: The correlation between hours of sleep and student GPA is ",cor(Econ220Data$GPA, Econ220Data$Sleep_in_Hours) , sep=""))
+print(paste("Graph 4: The correlation between debt amount and student GPA is ",cor(Econ220Data$GPA, Econ220Data$Debt_Amount) , sep=""))
+
+```
+
+There appears to be a weak negative correlation between stress and a student's GPA, a weak positive correlation between the amount of time a student spends on school work and GPA, a weak negative correlation (weaker than that of stress) between the amount of sleep a student gets and their overall GPA, and a weak positive correlation exists between student debt amount and GPA.
+
+Some of these numbers seem surprising at first. How can an increase in debt amount lead to an increase in GPA? Or how can an increase in sleep lead to a decrease in GPA? 
+
+The first culprit is the existence of extreme outliers in the sleep and debt variables compared to the other variables used in this study. The box plots below can used for comparison: 
+```{r, fig.show='hold', out.width="50%"}
+#Box plots for the purpose of visualizing outliers in the data grouped by sex
+
+#Box plot for stress grouped by sex 
+ggplot(data=Econ220Data, aes(y=StressData, x=sex, color = sex))+ geom_boxplot( alpha=0.5) + ylab("Stress level (1-10)") + ggtitle("Stress by Sex ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Box plot for hour spent studying per week grouped by sex 
+ggplot(data=Econ220Data, aes(y=Hours_per_Week_Spent_on_Schoolwork, x=sex, color = sex))+ geom_boxplot( alpha=0.5) + ggtitle("Time Spent on Schoolwork by Sex ") + ylab("Hours per week") + theme(plot.title = element_text(hjust = 0.5)) 
+
+#Box plot for sleep grouped by sex 
+ggplot(data=Econ220Data, aes(y=Sleep_in_Hours, x=sex, color = sex))+ geom_boxplot( alpha=0.5) + ylab("Hours per day") + ggtitle("Sleep by Sex ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Box plot for debt amount grouped by sex 
+ggplot(data=Econ220Data, aes(y=Debt_Amount, x=sex, color = sex))+ geom_boxplot( alpha=0.5) + ylab("Debt in dollars ($)")  + ggtitle("Debt by Sex ") +  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+As can be observed, the debt data has a large number of outliers in comparison to other variables which may explain the unexpected results from the correlation coefficient. The sleep, stress, and hours spent studying variables have one to two outliers each so results are more reliable. However, this doesn't explain the unforseen results for the sleep vs. GPA correlation coefficient.  
+
+Another logical conclusion is that external factors resulting from the ongoing COVID-19 Pandemic had unobserved effects on the data compared to previous years.
+For example, it's possible that a negative correlation exists between sleep and student GPA because students feel unmotivated when it comes to learning and/or completing assignments for their online classes. 
+Spending less time on academics can,therefore, result in more hours of sleep per night. 
+
+# Analysis of Confidence Intervals and Testing
+In order to verify the validity of the hypotheses made at the beginning of this study, a series of t-tests will be performed. 
+
+In general, lower p-values indicate that the null hypothesis can be rejected in favor of the alternative hypothesis. In this case, the level of significance is .05 meaning that any values greater than this  will result in a failure to reject the null hypothesis. The t-test for the relationships mentioned in the hypotheses can be found below: 
+
+### Hypothesis 1: Hours Spent on Schoolwork vs. Student Debt
+When it comes to student debt and the average hours a student spends studying, the data can become somewhat unclear. While some students with debt spend more time on average studying than those who have none, others demonstrate the opposite behavior. These trends can be observed in the table below:
+
+```{r}
+#Table showing the relationship between debt amount and average hours spent studying
+na.omit(Econ220Data) %>% group_by(Debt_Amount) %>% summarize( AvgHoursStudying = mean(Hours_per_Week_Spent_on_Schoolwork)) %>% kable( digits=2)%>% kable_styling(bootstrap_options = "striped", full_width = F) 
+```
+Using a t-test will allow us to determine if the relationship between hours spent studying and having debt is statistically significant. 
+
+```{r}
+#Table depicting trends between average hours studying per week and student debt 
+t.test(Hours_per_Week_Spent_on_Schoolwork ~ studebt, data = Econ220Data)
+```
+As can be seen the p-value for this relationship is greater than .05. Therefore, we fail to reject the null hypothesis which states that hours spent studying and having debt are not statistically significant.
+
+### Hypothesis 2: Hours Spent on Schoolwork/Stress Level vs. Employment Status 
+
+Employment decisions seem to have underlying effects during college including the level of stress a student experiences and how much time they have available to study. The table below demonstrates some of the implications stress has on average study hours. 
+
+```{r, message=FALSE}
+#Table depicting trends between average hours studying per week and stress level 
+na.omit(Econ220Data) %>% group_by(Stress_Level) %>% summarize( AvgHoursStudying = mean(Hours_per_Week_Spent_on_Schoolwork)) %>% kable( digits=2)%>% kable_styling(bootstrap_options = "striped", full_width = F) 
+```
+
+
+Using a t-test, it can be determined if the relationships between hours spent studying, stress level, and employment status are statistically significant.
+
+#### Hours Spent on Schoolwork 
+```{r}
+#T test for relationship between hours spent on schoolwork per week and employment status 
+t.test(Hours_per_Week_Spent_on_Schoolwork ~ Currently_Employeed, data = Econ220Data)
+```
+Once more, the p-value for this relationship is larger than .05. Therefore, we fail to reject the null hypothesis which states that hours spent studying and employment status are not statistically significant.
+
+#### Stress Level
+```{r}
+#T test for relationship between stress and employment status 
+t.test(StressData ~ Currently_Employeed, data = Econ220Data)
+```
+The p-value for this relationship is greater than .05. Once more, we fail to reject the null hypothesis which states that stress level and employment status are not statistically significant.
+
+### Hypothesis 3: GPA vs. Debt Status
+In this study, debt amount and GPA had one of the most unexpected relationships of all - a weak positive correlation between the two variables. The table below helps illustrates the trends that exist between average GPA and the amount debt students reported.
+```{r}
+#Table showing the relationship between student debt amount and average GPA
+na.omit(Econ220Data) %>% group_by(Debt_Amount) %>% summarize( AvgGPA = mean(GPA)) %>% kable( digits=2)%>% kable_styling(bootstrap_options = "striped", full_width = F) 
+```
+
+A t-test will be performed to determine if this relationship is statistically significant. 
+
+```{r}
+#T test for relationship between GPA and student debt 
+t.test(GPA ~ studebt, data = Econ220Data )
+```
+The p-value for this relationship is smaller than 0.05. Therefore, we reject the null hypothesis in favor of the alternative hypothesis. As a result, it can be concluded that there is a statistically significant relationship between having outstanding debt and student GPA.
+
+# Conclusions 
+
+### Procedure 
+
+The purpose of this study was to analyze the effects that debt had on the academics of Emory students with a particular emphasis on the time dedicated to class work. This was done by comparing the levels of stress reported by students as a result of employment status and average time spent studying which revealed an interesting relationship between the three variables. It seemed to be the case that students who are currently employed not only experienced more stress but also dedicated less time to their studies outside of class. 
+
+Comparisons were also drawn between sleep, debt amount, stress level, and hours spent on school work per week through a common variable: GPA. This revealed unexpected relationships between GPA and sleep as well as GPA and debt amount. For one, increased sleep seemed to lead to a lower GPA while an increase in debt led to higher GPA scores. 
+
+Following this preliminary analysis, t-tests were used to determine if the relationships under scrutiny in this study were statistically significant.
+
+### Confidence Testing Results 
+It can be concluded that the data derived for this study is insufficient to prove or disprove any of the previously made hypotheses with the exception of debt and GPA which proved to have a statistically significant relationship. However, the data on debt had a large number of outliers compared to other variables (as seen in the box plots from the "What Affects the GPA of Emory Students?" section) which jeopardizes the validity of this conclusion. The relationship also proved to be positive rather than negative as previously hypothesized. 
+
+Therefore, it is suggested that future studies be improved in the following ways to achieve better results:
+
+### Improving Future Studies
+![]( /Users/yuritzyramos/Desktop/images/dreamstime_s_97267612_780x480.jpg )
+
+* Expand sample size to include equal numbers of males and females from each year
+  + Equal proportions of males and females will allow the researcher to discern if there exist a statistically significant difference in the amount of debt owed and sex.
+  + Students at different stages of college usually experience different levels of expectations and stress which can alter employment decisions and stress levels. Including a wide range of years will allow the data to be more concise.
+
+* Specify types of debt
+  + Student loans are a different kind of investment compared to, for example, a loan for a car. Therefore, it would be beneficial to this study if students specified whether their debt consists of student loans or other forms of debt. 
+  
+* Type of employment and hours worked by student 
+  + Different part-time jobs require different time commitments. It would improve our understanding of how employment affects  variables related to college such as hours spent studying per week. 
+  + Some students may work through a paid internship that would positively increase their knowledge in a desired field while others must opt for federal work study positions which have more time flexibility but unconventential payment schedules.
+
+By expanding futures studies in this manner, researchers increases the chances of revealing the relationship that exists between student debt and academic variables at Emory University.
+
+# Bibliography 
+Bermeo, Adolfo, et al. Moving Beyond Access: College Success For Low Income, First-Generation Students . files.eric.ed.gov/fulltext/ED504448.pdf. 
+
+Bouchrika, Imed. “50 Current Student Stress Statistics: 2019/2020 Data, Analysis &amp; Predictions.” Guide 2 Research, 26 Oct. 2020, www.guide2research.com/research/student-stress-statistics#3. 
+
+Deeper in Debt: Women &amp; Student Loans – AAUW : Empowering Women since 1881. 22 May 2020, www.aauw.org/resources/research/deeper-in-debt/. 
+
+Grabmeier, Jeff. 70 Percent of College Students Stressed about Finances, The Ohio State University, 30 June 2015, news.osu.edu/70-percent-of-college-students-stressed-about-finances/. 
+Krause, John. The Wall Street Journal , 26 May 2020, www.wsj.com/articles/should-we-forgive-all-federal-student-loan-debt-11590525387. 
+
+“Stress-Curve.” Eagle Mountain Counseling , eaglemountaincounseling.org/stress-management-important/stress-curve/. 
+“What Is Random Sampling?” Displayr, 7 Dec. 2020, www.displayr.com/what-is-random-sampling/. 
+
+“Yerkes–Dodson Law.” Wikipedia, Wikimedia Foundation, 25 Mar. 2021, en.wikipedia.org/wiki/Yerkes%E2%80%93Dodson_law. 
+

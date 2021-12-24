@@ -1,0 +1,27 @@
+---
+title: 'Assignment 1: My First Knitted Document'
+author: "Yuritzy Ramos"
+date: "2/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading data into R
+```{r}
+PresElection2020_info <- read.csv("~/Downloads/LAB220/PresElection2020_info.csv")
+str(PresElection2020_info)
+```
+
+### Adding info: creating a new vector 
+
+```{r}
+mystate <- c(0, 0 , 1, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0
+            ,0 , 0)
+myview <- c("h", "s", "h", "s", "s", "h","h","s","s", "h", "h", "s", "s", "h", "s", "h")
+elections_data <- data.frame(mystate, myview)
+```
+
+

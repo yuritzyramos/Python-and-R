@@ -1,0 +1,108 @@
+---
+title: "Assignment: Quantiles and Graphs"
+author: "Yuritzy Ramos"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document: 
+    toc: yes
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+# Birthweight data by gender 
+
+```{r, echo=TRUE}
+#Load data
+BirthdataNC <- read.csv("~/Downloads/LAB220/BirthdataNC.csv")
+
+#Create Table with average weight and the standard deviation of weight grouped by gender
+statsbygender<-group_by(BirthdataNC, gender) %>% 
+  summarize(mean(weight), sd(weight, na.rm=TRUE))
+kable(statsbygender, digits = 3, col.names = c("Gender", "Average Weight", "Sd Weight"))%>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+```{r, echo = TRUE}
+# Interactive histogram of the data with density function included. The range goes from 0 to 12 by 0.3
+ggplot(BirthdataNC, aes(weight, fill=gender))+
+geom_histogram(aes( y=..density..), breaks = seq(0,12,.3), alpha= .7) + geom_density(col=1, alpha =.4) +  geom_vline(xintercept = mean(BirthdataNC$weight), linetype="dotted", color = "darkgreen", size=1.5) 
+```
+
+
+# Create quantiles:
+
+```{r, results='hold', echo=TRUE}
+
+# Create quartiles of the data
+bwt<- BirthdataNC$weight
+ quantile(bwt, na.rm = TRUE)
+ 
+#Create quartiles by gender.
+#Select the weights for females
+ female<-ifelse(BirthdataNC$gender=="female",BirthdataNC$weight,NA)
+#Select the weights for males
+ male<-ifelse(BirthdataNC$gender=="male",BirthdataNC$weight,NA)
+ 
+#Get quartiles for females remove NAs produced during the selection process
+ quantile(female, na.rm = TRUE)
+#Get quartiles for females remove NAs produced during the selection process
+ quantile(male, na.rm = TRUE)
+
+
+# Create deciles of the data
+# this creates a sequence from 0 to 1 by 0.1
+ deciles<-seq(0,1,0.1) 
+ 
+#Get deciles for females remove NAs produced during selection process
+ quantile(female, na.rm = TRUE,deciles)
+#Get deciles for males remove NAs produced during selection process
+ quantile(male,na.rm = TRUE, deciles)
+ 
+ #Weight value for the 75th percentile in entire population
+ p75w<-quantile(bwt, 0.75, na.rm = TRUE)
+ print(paste("Weight for 75th percentile for the whole population", p75w))
+
+#Weight value for the 45th percentile in female population
+p45f<-quantile(female, 0.45, na.rm = TRUE)
+ print(paste("Weight for 45th percentile for female population", p45f))
+```
+
+# Boxplot of weight by gender. 
+
+```{r, results='hold',echo=TRUE}
+# Boxplot by gender, flip the coordinates like we did in the video lecture. Code given in assignment. 
+ggplot(data=BirthdataNC, aes(y=weight, x=gender, color=gender))+
+  geom_boxplot( alpha=0.5)+
+labs(title="Weight distribution by gender -  Boxplot") + coord_flip() +
+   theme(plot.title = element_text(hjust = 0.5))
+ggplot(data=BirthdataNC, aes(y=weight, x=gender, fill=gender, color=gender))+
+  geom_violin( alpha=0.5)+
+   scale_color_manual(values = c("purple", "green"))+
+   scale_fill_manual(values = c("purple", "green"))+
+labs(title="Weight distribution by gender -  Violin Plot") +
+   theme(plot.title = element_text(hjust = 0.5)) + theme_classic()
+
+```
+
+
+```{r, echo=TRUE}
+
+# The value of alpha is use for Hypothesis testing
+alpha <- c(0.10, 0.01) 
+# Critical values for given alpha using the normal approximation and the t-student with 1000 d.f:
+# critical value for the normal distribution
+n<-qnorm(1-alpha) # use qnorm for quantile function
+t<-round(qt(1-alpha ,1000),3) #t-student
+
+kable(data.frame(alpha, t , n), digits=3, padding=5L, col.names = c("$\\alpha$", "T-student", "Normal-right"))%>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+
+```
+
+

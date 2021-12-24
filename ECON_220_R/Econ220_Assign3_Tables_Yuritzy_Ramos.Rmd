@@ -1,0 +1,53 @@
+---
+title: "Assignment: Descriptive Stats using tables "
+author: "Yuritzy Ramos"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+code_hiding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(knitr)
+#install.packages("kableExtra") in the console this will provide the functions for kable.styling
+library(kableExtra)# call the package kable extra that will make a table look better. 
+```
+
+## Descriptive Stats using tables 
+
+```{r, results='hold', message=FALSE}
+college <- read.csv("http://672258.youcanlearnit.net/college.csv")
+coltype<-(college$control)
+kable(prop.table(table(coltype)), digits=3, 
+      col.names=c("College Type", "Prop")) %>% 
+      kable_styling(bootstrap_options = "striped", full_width = F)
+
+## Create here table by region 
+region<-(college$region)
+kable(prop.table(table(region)), digits=3, 
+      col.names=c("Region", "Prop")) %>% 
+      kable_styling(bootstrap_options = "striped", full_width = F)
+
+
+# use the package dplyr fromtidyverse to make that calculations and then use kable and kable styling to make a nice looking table. 
+
+college %>% 
+  group_by(control) %>% 
+  summarize(AvgTuition= mean(tuition), AvgSAT= mean(sat_avg)) %>% 
+ kable(digits=3)  %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"),   full_width = F)
+
+# now that table by region and college for average tuition and average SAT
+
+college %>% group_by(region, control)%>%
+  summarise(AvgTuition = mean(tuition), AvgSAT = mean(sat_avg))%>%
+  kable(digits = 3, col.names = c("Region", "Type", "Tuition", "SAT"))%>%
+ kable_styling(bootstrap_options = c("striped", "hover"),   full_width = F)
+
+
+
+
+
+```
+

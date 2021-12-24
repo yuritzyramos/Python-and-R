@@ -1,0 +1,121 @@
+---
+title: "Assignment 2 Econ220"
+author: "Yuritzy Ramos"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# load the necessary package here
+library(tidyverse)
+library(dplyr)
+# if tidyverse was not working for you remember you can load ggplot and dplyr separately
+```
+
+# Loading data into R 
+
+```{r,echo=TRUE}
+#Load data into R
+load("~/Downloads/LAB220/Econ220DataS21_ano.Rdata")
+```
+
+# Descriptive statistics of the data 
+
+```{r, echo=TRUE}
+#Select desired variables from the imported data set and turn the resulting object into a data frame
+data20 <- Econ220DataS21_ano %>%
+ select(sex,age,GPA,q12,q14,q59)
+data20 <- data.frame(data20)
+#Get the summary for the dataframe
+summary(data20)
+
+```
+
+# Modify your dataset with dplyr
+
+
+```{r, echo=TRUE}
+
+#Change the names of the question variables selected from the data set
+#Pipe each change into the next one so they are all reflected in the same data frame
+data20 <-data20 %>%
+  rename(Happiness = q12)%>%
+  rename(Sleep = q14)%>%
+  rename(Savings = q59)
+```
+
+```{r, results='hold',echo=TRUE}
+#Set knitR results to 'hold' so outputs are printed one after the other
+
+#Create new variables for the data frame and assign them logical values (TRUE or FALSE)
+
+data20 <- data20 %>%
+  #If Sleep > 6 assign TRUE otherwise FALSE
+  mutate(Goodsleep = ifelse(Sleep > 6, TRUE,FALSE)) %>%
+  #If age >= 21 assign TRUE otherwise FALSE
+  mutate(Over21 = ifelse(age > 21 | age == 21, TRUE, FALSE))
+
+#Find the average for the two variables removing NA values when necessary
+print(paste("Proportion of people with good sleep=", round(mean(data20$Goodsleep, na.rm=TRUE),3)*100,"%", sep=" "))
+
+print(paste("Proportion of people over 21= ", round(mean(data20$Over21, na.rm = TRUE),3)*100,"%",  sep=""))
+```
+
+# Stats by group 
+
+
+```{r,echo=TRUE}
+#Fix the GPA variable and convert it to a numeric type 
+data20$GPA[data20$GPA == "Highschool - 3.9"] <- 3.9
+data20$GPA<-as.numeric(data20$GPA)
+
+```
+
+
+```{r,echo=TRUE}
+#Factor the sex variable from the data 
+data20$sex<-factor(data20$sex, c("Female", "Male"))
+
+#Create a tibble containing the averages of the GPA, Sleep, Goodsleep, and Over21 variables for the two sexes
+#Use na.omit() to eliminate missing variables 
+(databygend<-data20 %>% 
+    select(sex,GPA, Sleep, Goodsleep, Over21) %>% 
+    group_by(sex)%>%
+    summarise_all(mean) %>% 
+    na.omit())
+```
+
+
+# Graphs using ggplot
+
+
+```{r, results='hold',echo=TRUE}
+#Omit missing data values before creating the graphs
+data20<- na.omit(data20)
+
+#Create dot plots that show the relationship between GPA and Sleep for males and females
+ggplot(data20, mapping=aes(x=GPA,y=Sleep,color=sex)) + geom_point(alpha=.5) + 
+  facet_grid (cols = vars(data20$sex))
+```
+
+```{r,echo=TRUE}
+#Create a bar graph showing the proportion of students over 21 based on sex
+ggplot(databygend, mapping=aes(x=sex, y= Over21, label= round(Over21, digits = 3))) +
+  geom_col(fill="lightgreen") +
+  geom_text(size=7, fontface=2, color="red", position = position_stack(vjust = 0.5))+
+  ylab("Over 21") + xlab("Sex") +
+  ggtitle("Proportion of students over 21 by sex") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+#Create a bar graph showing the proportion of people with good sleep based on sex
+ggplot(databygend, mapping = aes(x = sex, y = Goodsleep, label = round(Goodsleep, digits = 3))) +
+  geom_col(fill="navy") +
+  geom_text(size=7, fontface=2, color="yellow", position = position_stack(vjust = 0.5))+ ylab("GoodSleep") + xlab("Sex") +
+  ggtitle("Proportion of people with good sleep by sex") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+  
+```
+
