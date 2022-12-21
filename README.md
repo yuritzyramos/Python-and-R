@@ -57,8 +57,8 @@ For the final project, I was in charge of creating data visualizations (scatterp
 
 I also assisted in finding the data set used for the assignment and I set up the DropBox folder that my teammates and I used to collaborate on the same Jupyter notebook. 
 
-###Machine Learning 
+### Machine Learning 
 
-####Final Project 
+#### Final Project 
 For this project, my team and I decided to design and code a program that could predict the success and revenue of video games. The program was trained using a dataset containing the attributes (developer, publisher, genere, etc.) of different video games from 2016. Our program implements KNN, decision tree, random forest, and navie bayes classifers to predict success based on whether a game is classified as Triple-A or Indie. The quantitative value of the user inputted video game is predicted using linear regression, linear regression with stochastic gradient descent, and XGBoost. 
 We concluded that the data used to train the classification models was sufficient enough to predict whether a game was indie or triple-A with high accuracy. However, correctly predicting the success of a video game seems to require more extensive research in terms of the “best” data to use. Our regression model also demonstrated mixed results with a decent amount of predictions being within close range of the estimated revenue values. However, the model still faced the problem of calculating negative revenues, a result that may be attributable to the data used. 
