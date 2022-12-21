@@ -7,6 +7,8 @@ For final projects, students were allowed to work independently or in groups for
 
 As a result, these projects reflect my ability to work independently and in a group\team.
 
+### Update
+I also had the chance to use Python in a few of my Computer Science classes over the course of my undergraduate career. Under the Python section of this profolio I have included the code for my group's final project for Machine Learning (CS 334). This program is meant to predict the success and revenue of a user inputted video game.
 
 ## R Programming Language 
 
